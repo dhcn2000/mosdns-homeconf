@@ -53,7 +53,7 @@ echo "所有目录已准备就绪"
 
 # 下载geodata文件
 download_files() {
-    local url="https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download"
+    local url="https://github.404cafe.fun/https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download"
     
     declare -A files=(
         ["geoip.dat"]="${url}/geoip.dat"
@@ -82,7 +82,7 @@ declare -A unpack_tasks=(
     # v2dat命令只支持解压国家和地区代码的ip数据标签, 如cn,hk,jp,us等等, 不支持"!cn"标签
     ["geoip:private"]="$ip_set_dir"
     ["geoip:cn"]="$ip_set_dir"
-    # 所有可用的域名数据标签请见: https://github.com/v2fly/domain-list-community/tree/master/data
+    # 所有可用的域名数据标签请见: https://github.404cafe.fun/https://github.com/v2fly/domain-list-community/tree/master/data
     ["geosite:private"]="$domain_set_dir"
     ["geosite:google"]="$domain_set_dir"
     ["geosite:cn"]="$domain_set_dir"
