@@ -7,7 +7,7 @@ plugins:
     args:
       concurrent: 1
       upstreams:
-        - addr: "udp://192.168.2.252:53"
+        - addr: "udp://192.168.2.1:53"
 
   # 国内DNS服务器
   - tag: Domestic_Server
