@@ -1,12 +1,94 @@
 #!/bin/bash
 
-set -euo pipefail
+# MosDNS 一键安装脚本 (Debian 12 验证通过)
+# 修复DNS解析问题 + 添加网络预检
+# 官方版本: v5.3.3
 
-# 检查是否以 root 权限运行
-if [ "$(id -u)" -ne 0 ]; then
-    echo "错误: 请使用 root 权限运行此脚本 (e.g., sudo $0)"
+# 配置参数
+MOSDNS_VERSION="v5.3.3"
+CONFIG_DIR="/etc/mosdns"
+BIN_PATH="/usr/local/bin/mosdns"
+SERVICE_FILE="/etc/systemd/system/mosdns.service"
+
+# 颜色定义
+RED='\033[31m'
+GREEN='\033[32m'
+YELLOW='\033[33m'
+BLUE='\033[34m'
+NC='\033[0m'
+
+# -------------------------- 初始化检查 --------------------------
+# 检查 root 权限
+if [ "$(id -u)" != "0" ]; then
+    echo -e "${RED}错误：必须使用 root 权限执行${NC}"
     exit 1
 fi
+
+# -------------------------- 网络预检 --------------------------
+network_check() {
+    echo -e "${BLUE}[1/8] 执行网络预检...${NC}"
+    
+    # 检查互联网连通性
+    if ! ping -c 2 8.8.8.8 &> /dev/null; then
+        echo -e "${RED}错误：无法连接到互联网！${NC}"
+        exit 1
+    fi
+
+    # 检查DNS解析能力
+    if ! dig github.com +short &> /dev/null; then
+        echo -e "${YELLOW}警告：DNS解析失败，尝试修复...${NC}"
+        
+        # 设置临时DNS
+        echo "nameserver 8.8.8.8" > /etc/resolv.conf
+        echo "nameserver 2001:4860:4860::8888" >> /etc/resolv.conf
+        
+        if ! dig github.com +short &> /dev/null; then
+            echo -e "${RED}错误：DNS修复失败，请手动检查网络设置！${NC}"
+            exit 1
+        fi
+    fi
+}
+network_check
+
+# -------------------------- 系统配置 --------------------------
+echo -e "${BLUE}[2/8] 配置系统环境...${NC}"
+systemctl stop systemd-resolved 2>/dev/null || true
+systemctl disable systemd-resolved 2>/dev/null || true
+
+# -------------------------- 安装依赖 --------------------------
+echo -e "${BLUE}[3/8] 安装系统依赖...${NC}"
+apt-get update
+apt-get install -y wget unzip
+
+# -------------------------- 下载 MosDNS --------------------------
+echo -e "${BLUE}[4/8] 下载官方安装包...${NC}"
+DL_URL="https://github.com/IrineSistiana/mosdns/releases/download/${MOSDNS_VERSION}/mosdns-linux-amd64.zip"
+
+# 带重试机制的下载命令
+for i in {1..3}; do
+    wget -q --show-progress -O /tmp/mosdns.zip "$DL_URL" && break
+    if [ $i -eq 3 ]; then
+        echo -e "${RED}下载失败！可能原因："
+        echo "1. 网络不稳定，请重试"
+        echo "2. 手动下载后上传到服务器："
+        echo "   curl -LO $DL_URL"
+        exit 1
+    fi
+    echo -e "${YELLOW}第 $i 次下载失败，10秒后重试...${NC}"
+    sleep 10
+done
+
+# -------------------------- 解压安装 --------------------------
+echo -e "${BLUE}[5/8] 解压安装文件...${NC}"
+if ! unzip -o /tmp/mosdns.zip -d /tmp; then
+    echo -e "${RED}解压失败！可能原因："
+    echo "1. 下载文件损坏，请手动检查：ls -lh /tmp/mosdns.zip"
+    echo "2. 安装 unzip 工具：apt-get install unzip"
+    exit 1
+fi
+
+mv /tmp/mosdns "$BIN_PATH"
+chmod +x "$BIN_PATH"
 
 # 检查 v2dat 命令是否存在
 if ! command -v v2dat &> /dev/null; then
@@ -53,7 +135,7 @@ echo "所有目录已准备就绪"
 
 # 下载geodata文件
 download_files() {
-    local url="https://github.404cafe.fun/https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download"
+    local url="https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download"
     
     declare -A files=(
         ["geoip.dat"]="${url}/geoip.dat"
@@ -82,7 +164,7 @@ declare -A unpack_tasks=(
     # v2dat命令只支持解压国家和地区代码的ip数据标签, 如cn,hk,jp,us等等, 不支持"!cn"标签
     ["geoip:private"]="$ip_set_dir"
     ["geoip:cn"]="$ip_set_dir"
-    # 所有可用的域名数据标签请见: https://github.404cafe.fun/https://github.com/v2fly/domain-list-community/tree/master/data
+    # 所有可用的域名数据标签请见: https://github.com/v2fly/domain-list-community/tree/master/data
     ["geosite:private"]="$domain_set_dir"
     ["geosite:google"]="$domain_set_dir"
     ["geosite:cn"]="$domain_set_dir"
