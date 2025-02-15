@@ -45,20 +45,20 @@ plugins:
         - tag: Google_DOH_1
           addr: "https://dns.google/dns-query"
           dial_addr: "8.8.8.8"
-          #socks5: "[ip:port]"  #非透明代理场景需指定socks代理，否则国外DNS查询会被阻断
+          socks5: "[ip:port]"  #非透明代理场景需指定socks代理，否则国外DNS查询会被阻断
           enable_http3: false  # http3代理特征明显，不建议开启
         - tag: Google_DOH_2
           addr: "https://dns.google/dns-query"
           dial_addr: "8.8.4.4"
-          #socks5: "[ip:port]"  #非透明代理场景需指定socks代理，否则国外DNS查询会被阻断
+          socks5: "[ip:port]"  #非透明代理场景需指定socks代理，否则国外DNS查询会被阻断
           enable_http3: false
         - tag: Quad9_DOH_1
           addr: "https://dns11.quad9.net/dns-query"
           dial_addr: "9.9.9.11"
-          #socks5: "[ip:port]"  #非透明代理场景需指定socks代理，否则国外DNS查询会被阻断
+          socks5: "[ip:port]"  #非透明代理场景需指定socks代理，否则国外DNS查询会被阻断
           enable_http3: false
         - tag: Quad9_DOH_2
           addr: "https://dns11.quad9.net/dns-query"
           dial_addr: "149.112.112.11"
-          #socks5: "[ip:port]"  #非透明代理场景需指定socks代理，否则国外DNS查询会被阻断
+          socks5: "[ip:port]"  #非透明代理场景需指定socks代理，否则国外DNS查询会被阻断
           enable_http3: false
