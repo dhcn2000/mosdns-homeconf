@@ -88,7 +88,7 @@ plugins:
       - exec: $PTR_Cache_Direct
       - exec: $Cache_Direct
       #- exec: prefer_ipv4  # 只返回A记录(IPv4)查询结果
-      #- exec: ecs mydhcn.dynv6.net  # 发送ECS IP从而获得最优的查询结果
+      - exec: ecs mydhcn.dynv6.net  # 发送ECS IP从而获得最优的查询结果
       - exec: $Domestic_Server
       - exec: jump TTL_Exit_if_Resp
   
@@ -150,7 +150,7 @@ plugins:
       - exec: $PTR_Cache_Direct
       - exec: $Cache_Direct
       #- exec: prefer_ipv4
-      #- exec: ecs mydhcn.dynv6.net
+      - exec: ecs mydhcn.dynv6.net
       - exec: $Domestic_Server
       - matches:
           - "!resp_ip $IP_CN"
